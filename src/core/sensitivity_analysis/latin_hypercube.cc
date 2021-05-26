@@ -29,7 +29,7 @@ std::vector<double>& LatinHypercubeSampleUniform(int n_samples, double min,
   // For the Latin Hypercube, we split [min, max] into n_samples intervals and
   // pick a random number inside the interval.
   TRandom3 rng;
-  for (size_t i = 0; i < n_samples; i++) {
+  for (int i = 0; i < n_samples; i++) {
     samples[i] = rng.Uniform(min + i * interval, min + (i + 1) * interval);
   }
   // We shuffle the vector such that our values occur in a random instead of an
@@ -73,15 +73,15 @@ std::vector<double>& LatinHypercubeSampleNormal(int n_samples, double mean,
   // For the last interval, the normal_cdf(5*sigma,mean,sigma) won't be larger
   // than 1, so we explictly draw a random number from the last interval
   // [low,max].
-  if (samples.size() == n_samples - 1) {
+  if (samples.size() == static_cast<size_t>(n_samples - 1)) {
     samples.push_back(rng.Uniform(low, high));
   }
   // Catch error if we somehow don't get the right number of samples.
-  else if (samples.size() < n_samples - 1) {
+  else if (samples.size() < static_cast<size_t>(n_samples - 1)) {
     Log::Fatal(
         "LatinHypercubeSampleNormal", "Unable to create sufficient",
         "data points. Consider increasing the parameter steps_per_samples.");
-  } else if (samples.size() == n_samples) {
+  } else if (samples.size() == static_cast<size_t>(n_samples)) {
     ;  // all good
   }
   // In this code block, we catch errors that we do not expect.

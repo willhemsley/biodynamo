@@ -13,6 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "core/sensitivity_analysis/statistical_measures.h"
+#include <algorithm>
 #include <cmath>
 #include <numeric>
 #include "core/util/log.h"
