@@ -13,6 +13,7 @@
 // -----------------------------------------------------------------------------
 
 #include "core/sensitivity_analysis/latin_hypercube.h"
+#include <TRandom3.h>
 #include <algorithm>
 #include <random>
 #include "Math/DistFuncMathCore.h"
@@ -27,9 +28,9 @@ std::vector<double>& LatinHypercubeSampleUniform(int n_samples, double min,
   double interval = (max - min) / static_cast<double>(n_samples);
   // For the Latin Hypercube, we split [min, max] into n_samples intervals and
   // pick a random number inside the interval.
+  TRandom3 rng;
   for (size_t i = 0; i < n_samples; i++) {
-    UniformRng rng(min + i * interval, min + (i + 1) * interval);
-    samples[i] = rng.Sample();
+    samples[i] = rng.Uniform(min + i * interval, min + (i + 1) * interval);
   }
   // We shuffle the vector such that our values occur in a random instead of an
   // increasing order.
@@ -39,7 +40,7 @@ std::vector<double>& LatinHypercubeSampleUniform(int n_samples, double min,
   return samples;
 };
 
-std::vector<double>& LatinHypercubeSampleNormal(size_t n_samples, double mean,
+std::vector<double>& LatinHypercubeSampleNormal(int n_samples, double mean,
                                                 double sigma,
                                                 size_t steps_per_sample) {
   // We use boundaries of 5 sigma to have a reasonable sampling domain.
@@ -49,8 +50,8 @@ std::vector<double>& LatinHypercubeSampleNormal(size_t n_samples, double mean,
   double high = min;
   const double step =
       (max - min) / static_cast<double>(n_samples * steps_per_sample);
-  static std::vector<double> samples;
   double cntr{1.0};
+  static std::vector<double> samples;
   // For the Latin Hpercube, we need to draw samples from regions of the
   // probability distribution that are equally likely. For us, this likelihood
   // is 1/n_samples. To find the appropriate regions, we use the normal
@@ -58,11 +59,11 @@ std::vector<double>& LatinHypercubeSampleNormal(size_t n_samples, double mean,
   // the intervals such that normal_cft(high) = n/n_samples and
   // normal_cft(low) = (n-1)/n_samples, where n is in [1,..,n_samples].
   // Afterwards, we choose a uniform number between low and high.
+  TRandom3 rng;
   while (high < max) {
     high += step;
     if (ROOT::Math::normal_cdf(high, sigma, mean) > (cntr / n_samples)) {
-      UniformRng rng(low, high);
-      samples.push_back(rng.Sample());
+      samples.push_back(rng.Uniform(low, high));
       low = high;
       cntr += 1.0;
     } else {
@@ -73,8 +74,7 @@ std::vector<double>& LatinHypercubeSampleNormal(size_t n_samples, double mean,
   // than 1, so we explictly draw a random number from the last interval
   // [low,max].
   if (samples.size() == n_samples - 1) {
-    UniformRng rng(low, max);
-    samples.push_back(rng.Sample());
+    samples.push_back(rng.Uniform(low, high));
   }
   // Catch error if we somehow don't get the right number of samples.
   else if (samples.size() < n_samples - 1) {

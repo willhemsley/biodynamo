@@ -29,6 +29,7 @@ double ComputeVariance(const std::vector<double>& x, const double x_avg) {
   for (double value : x) {
     variance += pow(value - x_avg, 2);
   }
+  variance /= static_cast<double>(x.size());
   return variance;
 };
 
@@ -42,15 +43,20 @@ double ComputeCovariance(const std::vector<double>& x, const double x_avg,
   for (size_t i = 0; i < x.size(); i++) {
     covariance += (x[i] - x_avg) * (y[i] - y_avg);
   }
+  covariance /= static_cast<double>(x.size());
   return covariance;
 };
 
 std::vector<double> RankTransfromation(const std::vector<double>& x) {
-  std::vector<double> index(x.size());
-  std::iota(index.begin(), index.end(), 1.0);
+  std::vector<int> index(x.size());
+  std::vector<double> output(x.size());
+  std::iota(index.begin(), index.end(), 0);
   std::sort(index.begin(), index.end(),
             [&](const int& a, const int& b) { return (x[a] < x[b]); });
-  return index;
+  for (size_t i = 0; i < index.size(); i++) {
+    output[index[i]] = i + 1;
+  }
+  return output;
 };
 
 double PearsonCorrelationCoefficient(const std::vector<double>& x,

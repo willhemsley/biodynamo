@@ -39,7 +39,7 @@ double ComputeCovariance(const std::vector<double>& x, double x_avg,
 
 /// Computes the rank transformation of the vector x. It computes a vector whose
 /// i-th entry gives the rank of x[i], i.e. x[i]'s position in a sorted list.
-/// E.g. { 0.1, 0.4, 0.2, 0.0 } -> { 2.0, 3.0, 1.0, 0.0 }.
+/// E.g. { 0.1, 0.4, 0.2, 0.0 } -> { 3.0, 4.0, 2.0, 1.0 }.
 std::vector<double> RankTransfromation(const std::vector<double>& x);
 
 /// Computes the Pearson Correlation Coefficient between two vectors x and y.
