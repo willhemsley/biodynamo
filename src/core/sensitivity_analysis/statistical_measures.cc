@@ -55,7 +55,6 @@ std::vector<double> RankTransfromation(const std::vector<double>& x) {
 
 double PearsonCorrelationCoefficient(const std::vector<double>& x,
                                      const std::vector<double>& y) {
-  double pcc{0.0};
   const double x_avg = ComputeAverage(x);
   const double y_avg = ComputeAverage(y);
   const double x_var = ComputeVariance(x, x_avg);
