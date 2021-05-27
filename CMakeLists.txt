@@ -258,7 +258,7 @@ endif()
 find_package(Git)
 
 # Find ROOT and check its installation
-find_package(ROOT COMPONENTS Geom Gui GenVector)
+find_package(ROOT COMPONENTS Geom Gui GenVector Minuit)
 verify_ROOT()
 
 if (dict)
