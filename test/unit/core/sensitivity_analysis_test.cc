@@ -13,11 +13,15 @@
 //
 // -----------------------------------------------------------------------------
 
+#include <TLinearFitter.h>
+#include <TRandom3.h>
+#include <time.h>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <vector>
 #include "core/sensitivity_analysis/latin_hypercube.h"
+#include "core/sensitivity_analysis/multivariable_regression.h"
 #include "core/sensitivity_analysis/statistical_measures.h"
 #include "gtest/gtest.h"
 
@@ -141,6 +145,91 @@ TEST(SensitivityAnalysisTest, LHSNormal) {
   // Test bounds for min and max
   EXPECT_TRUE(analytic_mean - 5 * analytic_var < *minmax.first);
   EXPECT_TRUE(analytic_mean + 5 * analytic_var > *minmax.second);
+}
+
+TEST(SensitivityAnalysisTest, MultivariableRegression) {
+  // Define parameters for test
+  int n_samples{10000};
+  int n_variables{5};
+  double outlier_fraction{0.2};
+  double noise_mean{0.0};
+  double noise_sigma{0.01};
+  time_t seed = time(NULL);
+  TRandom3 rng;
+  rng.SetSeed(seed);
+
+  // Define parameters for function. We'll construct a hyperplane, basically
+  // y = \alpha + \sum_i beta_i x_i. The alpha justifies the plus one below.
+  double param_in[n_variables + 1];
+  for (int i = 0; i < n_variables + 1; i++) {
+    param_in[i] = rng.Uniform();
+    std::cout << "parameter " << i << ": " << param_in[i] << std::endl;
+  }
+
+  // Produce random inputs and compute the output.
+  TVectorD prediction(n_samples);
+  TMatrixD inputs(n_samples, n_variables);
+  for (int row = 0; row < n_samples; row++) {
+    // Add a random noise of at most 5 sigma to our computation
+    double noise = rng.Gaus(noise_mean, noise_sigma);
+    if (noise_sigma < noise_mean - 5 * noise_sigma) {
+      noise_sigma = noise_mean - 5 * noise_sigma;
+    } else if (noise_sigma > noise_mean + 5 * noise_sigma) {
+      noise_sigma = noise_mean + 5 * noise_sigma;
+    } else {
+      ;  // all good
+    }
+    prediction[row] = param_in[0] + noise;
+    for (int col = 0; col < n_variables; col++) {
+      inputs[row][col] = rng.Uniform();
+      prediction[row] += (param_in[col + 1] * inputs[row][col]);
+    }
+  }
+
+  // Compute MultivariateRegression
+  MultivariableRegression m_reg_1(inputs, prediction, false);
+  m_reg_1.Fit();
+  auto param_fit = m_reg_1.GetParameters();
+
+  // Compare input and output parameters
+  for (int i = 0; i < param_fit.GetNoElements(); i++) {
+    EXPECT_NEAR(param_in[i], param_fit[i], noise_sigma / 5.0);
+  }
+
+  // Check if residuals are in 5.5 sigma range - "Quality check"
+  auto residuals = m_reg_1.GetResiduals();
+  EXPECT_EQ(prediction.GetNoElements(), residuals.GetNoElements());
+  for (int i = 0; i < residuals.GetNoElements(); i++) {
+    EXPECT_TRUE(abs(residuals[i]) <= 5.5 * noise_sigma);
+  }
+
+  // Modify data to contain outliers
+  for (int i = 0; i < prediction.GetNoElements();
+       i += static_cast<int>(1.0 / outlier_fraction)) {
+    prediction[i] += rng.Uniform();
+  }
+
+  // Compute MultivariateRegression on ill-data
+  MultivariableRegression m_reg_2(inputs, prediction, false);
+  m_reg_2.Fit();
+  auto param_fit_regular = m_reg_2.GetParameters();
+
+  // Compute robust MultivariateRegression on ill-data
+  MultivariableRegression m_reg_robust(inputs, prediction, true);
+  m_reg_robust.Fit();
+  auto param_fit_robust = m_reg_robust.GetParameters();
+
+  // Compare input and output parameters
+  double err_regular{0.0};
+  double err_robust{0.0};
+  for (int i = 0; i < param_fit_robust.GetNoElements(); i++) {
+    // Expect matching parameters
+    EXPECT_NEAR(param_in[i], param_fit_robust[i], noise_sigma / 2.0);
+    // Expect better estimates from robust fit over regular fit.
+    err_robust += pow(param_in[i] - param_fit_robust[i], 2);
+    err_regular += pow(param_in[i] - param_fit_regular[i], 2);
+  }
+  EXPECT_TRUE(err_robust < err_regular);
 }
 
 }  // namespace bdm
