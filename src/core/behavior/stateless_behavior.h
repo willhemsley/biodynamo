@@ -81,6 +81,7 @@ inline void StatelessBehavior::Streamer(TBuffer& R__b) {
     R__b.ReadClassBuffer(StatelessBehavior::Class(), this);
     Long64_t l;
     R__b.ReadLong64(l);
+    // ToDo: Flagged by [performance-no-int-to-ptr]
     this->fptr_ = reinterpret_cast<StatelessBehavior::FPtr>(l);
   } else {
     R__b.WriteClassBuffer(StatelessBehavior::Class(), this);

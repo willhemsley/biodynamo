@@ -202,8 +202,10 @@ inline void TimeSeries::Data::Streamer(TBuffer& R__b) {
     R__b.ReadClassBuffer(TimeSeries::Data::Class(), this);
     Long64_t l;
     R__b.ReadLong64(l);
+    // ToDo: Flagged by [performance-no-int-to-ptr]
     this->ycollector = reinterpret_cast<double (*)(Simulation*)>(l);
     R__b.ReadLong64(l);
+    // ToDo: Flagged by [performance-no-int-to-ptr]
     this->xcollector = reinterpret_cast<double (*)(Simulation*)>(l);
   } else {
     R__b.WriteClassBuffer(TimeSeries::Data::Class(), this);

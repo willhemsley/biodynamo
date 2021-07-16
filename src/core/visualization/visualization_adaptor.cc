@@ -48,6 +48,7 @@ VisualizationAdaptor *VisualizationAdaptor::Create(const std::string &adaptor) {
       if (h->LoadPlugin() == 0) {
         // Register the plugin handler for future use
         loaded_[adaptor] = h;
+        // ToDo: Flagged by [performance-no-int-to-ptr]
         va = reinterpret_cast<VisualizationAdaptor *>(h->ExecPlugin(0));
         return va;
       } else {
@@ -63,6 +64,7 @@ VisualizationAdaptor *VisualizationAdaptor::Create(const std::string &adaptor) {
   } else {  // If we already tried loading this plugin, we avoid dynamically
             // loading the shared library again
     if (loaded_[adaptor]) {  // If we successfully loaded the plugin before
+      // ToDo: Flagged by [performance-no-int-to-ptr]
       va = reinterpret_cast<VisualizationAdaptor *>(
           loaded_[adaptor]->ExecPlugin(0));
       return va;

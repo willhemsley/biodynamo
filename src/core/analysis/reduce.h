@@ -276,6 +276,7 @@ inline void Counter<TResult>::Streamer(TBuffer& R__b) {
     R__b.ReadClassBuffer(Counter::Class(), this);
     Long64_t l;
     R__b.ReadLong64(l);
+    // ToDo: Flagged by [performance-no-int-to-ptr]
     this->condition_ = reinterpret_cast<bool (*)(Agent*)>(l);
     R__b.ReadLong64(l);
     this->post_process_ = reinterpret_cast<TResult (*)(TResult)>(l);

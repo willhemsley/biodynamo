@@ -245,6 +245,7 @@ void NumaPoolAllocator::AllocNewMemoryBlock(std::size_t size) {
       RoundUpTo(reinterpret_cast<uint64_t>(block), size_n_pages_);
   auto* start = reinterpret_cast<char*>(block);
   char* end = start + size;
+  // ToDo: Flagged by [performance-no-int-to-ptr]
   memory_blocks_.push_back(
       {start, end, reinterpret_cast<char*>(n_pages_aligned)});
 }
@@ -392,6 +393,7 @@ void MemoryManager::Delete(void* p) {
   }
   auto addr = reinterpret_cast<uint64_t>(p);
   auto page_number = addr >> (page_shift_ + aligned_pages_shift_);
+  // ToDo: Flagged by [performance-no-int-to-ptr]
   auto* page_addr = reinterpret_cast<char*>(
       page_number << (page_shift_ + aligned_pages_shift_));
   auto* npa =

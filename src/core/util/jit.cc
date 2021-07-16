@@ -137,6 +137,7 @@ void JitForEachDataMemberFunctor::Compile() {
 void* JitForEachDataMemberFunctor::New(const std::string& parameter) {
   auto cmd = Concat("#pragma cling optimize(3)\nnew bdm::", functor_name_, "(",
                     parameter, ")");
+  // ToDo: Flagged by [performance-no-int-to-ptr]
   return reinterpret_cast<void*>(gInterpreter->Calc(cmd.c_str()));
 }
 
