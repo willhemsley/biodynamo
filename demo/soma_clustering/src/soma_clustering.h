@@ -41,6 +41,7 @@ inline int Simulate(int argc, const char** argv) {
     param->min_bound = 0;
     param->max_bound = 250;
     param->unschedule_default_operations = {"mechanical forces"};
+    param->remove_output_dir_contents = true; // remove any old output files
   };
 
   Simulation simulation(argc, argv, set_param);
